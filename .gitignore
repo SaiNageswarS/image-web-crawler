@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+venv/
+env/
+.env
+.env.*
+.python-version
+
+# Logs and Databases
+*.log
+*.sqlite
+*.db
+*.db-journal
+
+# User-specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+*.bak
+*.pyc
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+__nb_cache/
+
+# Compiled Python
+__pycache__/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Caches
+__pycache__/
+.cython/
+
+# pyenv
+.python-version
+
+# mypy
+.mypy_cache/
+
+# pytest
+.pytest_cache/
+
+# vscode workspace settings
+.vscode/
+
+# Sublime Text
+.sublime-workspace
+.sublime-project
+
+# Jupyter
+.jupyter/
+
+# Cookiecutter
+cookiecutter-config.yaml
