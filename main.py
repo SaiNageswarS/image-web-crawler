@@ -4,39 +4,20 @@ from crawler import crawl_pages
 from data_items import ScrapeSiteItem
 from extract_images import extract_images
 
-app = Celery('SemanticImageSearchIngestion', broker='pyamqp://guest@localhost//')
 
-
-@app.task
-def crawl():
+if __name__ == '__main__':
     index_items = [
         ScrapeSiteItem(
-            src_url='https://www.thehindu.com/news/international/israel-hamas-conflict-live-updates-day-8/article67419467.ece',
+            src_url='https://economictimes.indiatimes.com/news/newsblogs/israel-palestine-war-live-news-gaza-strip-conflict-hamas-rocket-attack-jerusalem-operation-al-aqsa-flood-benjamin-netanyahu-latest-updates-day-6/liveblog/104355231.cms',
             skip_url_patterns=['coupons', 'subscribe', 'login', 'register', 'privacy', 'terms', 'contact',
                                'offers', 'newsletter', 'about', 'advertise', 'classifieds', 'careers',
                                'shop', 'games', 'ebooks', 'mobile', 'apps', 'food'],
             max_depth=1),
     ]
 
-    result = []
     for item in index_items:
-        image_and_text = crawl_pages(item, set())
-        print(image_and_text)
-        result = result + image_and_text
-
-    return result
+        page_urls = crawl_pages(item, set())
+        for page_url in page_urls:
+            image_text = extract_images(page_url)
 
 
-@app.task
-def extract_images_task(urls: list[str]):
-    result = []
-
-    for url in urls:
-        image_text = extract_images(url)
-        result = result + image_text
-
-    return result
-
-
-if __name__ == '__main__':
-    app.start()

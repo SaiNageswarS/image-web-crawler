@@ -31,16 +31,32 @@ def extract_images(url: str) -> list[VectorDataItem]:
                     continue
 
                 # skip images which are icons, spacers, etc.
-                if __is_skip_image(image):
+                if __is_skip_image__(image):
                     continue
 
                 image_url = urljoin(url, image['src'])
 
                 # get text near the image - para, heading, etc.
-                relevant_text = image.parent.text
+                relevant_text = __normalize_text__(image.parent.text) + \
+                                " " + \
+                                __normalize_text__(image['alt'])
 
-                result.append(VectorDataItem(image_url=image_url,
-                                             relevant_text=relevant_text))
+                # get text near the image - para, heading, etc.
+                current_element = image
+
+                while current_element:
+                    if current_element.name in ('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'):
+                        relevant_text += " " + current_element.get_text()
+                        break
+                    current_element = current_element.find_previous()
+
+                if len(relevant_text) < 50:
+                    continue
+
+                image_text_item = VectorDataItem(image_url=image_url,
+                                                 relevant_text=relevant_text)
+                print(f"Extract: {image_text_item}")
+                result.append(image_text_item)
         else:
             print(f"Failed to retrieve the webpage. Status code: {response.status_code}")
     except Exception as e:
@@ -49,7 +65,7 @@ def extract_images(url: str) -> list[VectorDataItem]:
     return result
 
 
-def __is_skip_image(image: dict) -> bool:
+def __is_skip_image__(image: dict) -> bool:
     """ Returns True if the image is an icon, spacer, etc. """
     for pattern in skip_image_pattern:
         if pattern in image['src']:
@@ -58,8 +74,16 @@ def __is_skip_image(image: dict) -> bool:
     return False
 
 
+def __normalize_text__(text: str) -> str:
+    """ Returns normalized text. """
+    text = text.lower().strip()
+    # keep characters and replace everything else with space
+    text = ''.join([c if c.isalpha() else ' ' for c in text])
+    return text
+
+
 if __name__ == '__main__':
-    image_text = extract_images('https://www.thehindu.com/news/international/israel-hamas-conflict-live-updates-day-8/article67419467.ece')
+    image_text = extract_images(
+        'https://www.thehindu.com/news/international/israel-hamas-conflict-live-updates-day-8/article67419467.ece')
     for x in image_text:
         print(x)
-

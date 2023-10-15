@@ -3,33 +3,32 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
 from data_items import ScrapeSiteItem
+from typing import Generator
 
 
-def crawl_pages(site: ScrapeSiteItem, visited: set[str]) -> list[str]:
+def crawl_pages(site: ScrapeSiteItem, visited: set[str]) -> Generator[str, None, None]:
     """ Returns list of URLs in the domain of the given URL. """
     url = site.src_url
-    result = []
 
     if url in visited:
-        return result
+        yield
 
     if site.max_depth <= 0:
-        return result
+        yield
 
     for pattern in site.skip_url_patterns:
         if pattern in url:
-            return result
+            yield
 
     visited.add(url)
-
-    print(f"Scraping {url}")
 
     try:
         # Send an HTTP request to the URL
         response = requests.get(url)
 
         if response.status_code == 200:
-            result.append(url)
+            print(f"Crawl:  {url}")
+            yield url
 
             # Crawl links in the page.
             soup = BeautifulSoup(response.text, 'html.parser')
@@ -42,10 +41,9 @@ def crawl_pages(site: ScrapeSiteItem, visited: set[str]) -> list[str]:
                                                    skip_url_patterns=site.skip_url_patterns,
                                                    max_depth=site.max_depth - 1)
                 child_items = crawl_pages(child_scrape_item, visited)
-                result = result + child_items
+                for child_url in child_items:
+                    yield child_url
         else:
             print(f"Failed to retrieve the webpage. Status code: {response.status_code}")
     except Exception as e:
         print(f"Failed to retrieve the webpage. Error: {e}")
-
-    return result
