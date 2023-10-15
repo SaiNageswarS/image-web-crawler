@@ -1,4 +1,4 @@
-from crawler import crawl_pages
+from crawler import Crawler
 from data_items import ScrapeSiteItem
 from extract_images import extract_images
 from index_image_text import vectorize_item
@@ -21,10 +21,11 @@ if __name__ == '__main__':
             max_depth=3),
     ]
 
+    crawler = Crawler(set())
     for item in index_items:
-        page_urls = crawl_pages(item, set())
+        page_urls = crawler.crawl_pages(item)
         for page_url in page_urls:
             image_text = extract_images(page_url)
 
-            for x in image_text:
-                vectorize_item(x)
+            if len(image_text) > 0:
+                vectorize_item(image_text)

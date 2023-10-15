@@ -15,13 +15,19 @@ pinecone.init(
 index = pinecone.Index('semanticimageidx')
 
 
-def vectorize_item(item: VectorDataItem):
+def vectorize_item(item: list[VectorDataItem]):
     """ Vectorizes text in item and saves item to pinecone"""
-    vector = model.encode(item.relevant_text).astype(float)
-    index.upsert(vectors=[
-        (
-            item.image_url,
+    request = []
+
+    for x in item:
+        vector = model.encode(x.relevant_text).astype(float). \
+            tolist()
+
+        request.append((
+            x.image_url,
             vector,
-            {"image_url": item.image_url, "relevant_text": item.relevant_text, "page_url": item.page_url}
-        )
-    ])
+            {"image_url": x.image_url, "relevant_text": x.relevant_text, "page_url": x.page_url}
+        ))
+
+    print(f"Index: {request}")
+    index.upsert(vectors=request)
