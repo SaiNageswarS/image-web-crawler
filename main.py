@@ -1,8 +1,7 @@
-from celery import Celery
-
 from crawler import crawl_pages
 from data_items import ScrapeSiteItem
 from extract_images import extract_images
+from index_image_text import vectorize_item
 
 
 if __name__ == '__main__':
@@ -13,6 +12,13 @@ if __name__ == '__main__':
                                'offers', 'newsletter', 'about', 'advertise', 'classifieds', 'careers',
                                'shop', 'games', 'ebooks', 'mobile', 'apps', 'food'],
             max_depth=1),
+
+        ScrapeSiteItem(
+            src_url='https://economictimes.indiatimes.com/',
+            skip_url_patterns=['coupons', 'subscribe', 'login', 'register', 'privacy', 'terms', 'contact',
+                               'offers', 'newsletter', 'about', 'advertise', 'classifieds', 'careers',
+                               'shop', 'games', 'ebooks', 'mobile', 'apps', 'food'],
+            max_depth=3),
     ]
 
     for item in index_items:
@@ -20,4 +26,5 @@ if __name__ == '__main__':
         for page_url in page_urls:
             image_text = extract_images(page_url)
 
-
+            for x in image_text:
+                vectorize_item(x)

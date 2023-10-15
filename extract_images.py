@@ -54,7 +54,8 @@ def extract_images(url: str) -> list[VectorDataItem]:
                     continue
 
                 image_text_item = VectorDataItem(image_url=image_url,
-                                                 relevant_text=relevant_text)
+                                                 relevant_text=relevant_text,
+                                                 page_url=url)
                 print(f"Extract: {image_text_item}")
                 result.append(image_text_item)
         else:

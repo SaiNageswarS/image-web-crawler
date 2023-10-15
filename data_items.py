@@ -5,6 +5,7 @@ from dataclasses import dataclass
 class VectorDataItem:
     image_url: str
     relevant_text: str
+    page_url: str
 
 
 @dataclass
