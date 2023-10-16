@@ -1,39 +1,33 @@
+from collections import deque
+
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
-from data_items import ScrapeSiteItem
 from typing import Generator
 
 
-class Crawler:
-    def __init__(self, visited: set[str]):
-        self.visited = visited
+def crawl_pages(start_url: str, skip_url_patterns: list[str], max_depth: int) -> Generator[str, None, None]:
+    """ Returns list of URLs in the page of the given URL. """
+    q = deque()
+    q.append((start_url, max_depth))
 
-    def crawl_pages(self, site: ScrapeSiteItem) -> Generator[str, None, None]:
-        """ Returns list of URLs in the domain of the given URL. """
-        url = site.src_url
+    while len(q) > 0:
+        url, depth = q.popleft()
 
-        if url in self.visited:
-            yield
+        if depth <= 0:
+            continue
 
-        if site.max_depth <= 0:
-            yield
-
-        for pattern in site.skip_url_patterns:
+        for pattern in skip_url_patterns:
             if pattern in url:
-                yield
-
-        self.visited.add(url)
+                continue
 
         try:
             # Send an HTTP request to the URL
             response = requests.get(url)
 
             if response.status_code == 200:
-                print(f"Crawl:  {url}")
                 yield url
-
                 # Crawl links in the page.
                 soup = BeautifulSoup(response.text, 'html.parser')
                 # Find and follow links to child pages
@@ -41,12 +35,7 @@ class Crawler:
 
                 for link in link_elements:
                     child_url = urljoin(url, link['href'])
-                    child_scrape_item = ScrapeSiteItem(src_url=child_url,
-                                                       skip_url_patterns=site.skip_url_patterns,
-                                                       max_depth=site.max_depth - 1)
-                    child_items = self.crawl_pages(child_scrape_item)
-                    for child_url in child_items:
-                        yield child_url
+                    q.append((child_url, depth - 1))
             else:
                 print(f"Failed to retrieve the webpage. Status code: {response.status_code}")
         except Exception as e:

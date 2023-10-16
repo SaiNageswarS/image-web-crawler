@@ -37,18 +37,20 @@ def extract_images(url: str) -> list[VectorDataItem]:
                 image_url = urljoin(url, image['src'])
 
                 # get text near the image - para, heading, etc.
-                relevant_text = __normalize_text__(image.parent.text) + \
-                                " " + \
-                                __normalize_text__(image['alt'])
+                relevant_text = __normalize_text__(image.parent.text)
+
+                if 'alt' in image:
+                    relevant_text += " " + __normalize_text__(image['alt'])
 
                 # get text near the image - para, heading, etc.
-                current_element = image
+                if len(relevant_text) < 50:
+                    current_element = image
 
-                while current_element:
-                    if current_element.name in ('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'):
-                        relevant_text += " " + current_element.get_text()
-                        break
-                    current_element = current_element.find_previous()
+                    while current_element:
+                        if current_element.name in ('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'):
+                            relevant_text += " " + current_element.get_text()
+                            break
+                        current_element = current_element.find_previous()
 
                 if len(relevant_text) < 50:
                     continue
