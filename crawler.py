@@ -11,11 +11,15 @@ def crawl_pages(start_url: str, skip_url_patterns: list[str], max_depth: int) ->
     """ Returns list of URLs in the page of the given URL. """
     q = deque()
     q.append((start_url, max_depth))
+    visited = set()
 
     while len(q) > 0:
         url, depth = q.popleft()
 
         if depth <= 0:
+            continue
+
+        if url in visited:
             continue
 
         for pattern in skip_url_patterns:
@@ -28,6 +32,8 @@ def crawl_pages(start_url: str, skip_url_patterns: list[str], max_depth: int) ->
 
             if response.status_code == 200:
                 yield url
+                visited.add(url)
+
                 # Crawl links in the page.
                 soup = BeautifulSoup(response.text, 'html.parser')
                 # Find and follow links to child pages
